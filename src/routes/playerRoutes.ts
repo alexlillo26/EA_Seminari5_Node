@@ -1,40 +1,76 @@
 import express, { Request, Response } from 'express';
+import mongoose from 'mongoose';
+
 const router = express.Router();
+
+// Modelo de Jugador (en MongoDB)
+const playerSchema = new mongoose.Schema({
+  name: String,
+  team: String,
+});
+
+const Player = mongoose.model('Player', playerSchema);
 
 /**
  * @openapi
  * /players:
  *   get:
- *     description: Obtiene todos los jugadores de la NBA
+ *     description: Obtiene la lista de jugadores
  *     responses:
  *       200:
- *         description: Lista de jugadores
+ *         description: Lista de jugadores obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                   team:
+ *                     type: string
  */
-router.get('/players', (req: Request, res: Response) => {
-  res.status(200).json({ message: 'Lista de jugadores' });
+router.get('/', async (req: Request, res: Response) => {
+  try {
+    const players = await Player.find();
+    res.json(players);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener jugadores', error });
+  }
 });
 
 /**
  * @openapi
- * /players/{id}:
- *   get:
- *     description: Obtiene un jugador por su ID
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: ID del jugador
- *         schema:
- *           type: integer
+ * /players:
+ *   post:
+ *     description: Añadir un nuevo jugador
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               team:
+ *                 type: string
  *     responses:
- *       200:
- *         description: Detalles del jugador
- *       404:
- *         description: Jugador no encontrado
+ *       201:
+ *         description: Jugador creado exitosamente
  */
-router.get('/players/:id', (req: Request, res: Response) => {
-  const { id } = req.params;
-  res.status(200).json({ message: `Detalles del jugador con ID ${id}` });
+router.post('/', async (req: Request, res: Response) => {
+  const { name, team } = req.body;
+  
+  const newPlayer = new Player({ name, team });
+  
+  try {
+    await newPlayer.save();
+    res.status(201).json(newPlayer);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al crear jugador', error });
+  }
 });
 
 export default router;
