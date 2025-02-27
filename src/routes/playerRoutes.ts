@@ -32,6 +32,7 @@ const Player = mongoose.model('Player', playerSchema);
  *                     type: string
  */
 router.get('/', async (req: Request, res: Response) => {
+  console.log("GET /players");
   try {
     const players = await Player.find();
     res.json(players);

@@ -7,12 +7,18 @@ import playerRoutes from './routes/playerRoutes';
 const app: Application = express();
 const port: number = 3000;
 
+// Middleware para registrar todas las solicitudes
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
+
 // Middleware para parsear JSON
 app.use(express.json());
 
 // Conexión a MongoDB
 mongoose.connect('mongodb://localhost:27017/seminarinode')
-  .then(() => console.log('Conectado a la base de datos de MongoDB'))
+  .then(() => console.log('*******Conectado a la base de datos de MongoDB'))
   .catch((error) => console.log('Error al conectar a la base de datos', error));
 
 // Configuración de Swagger
@@ -38,6 +44,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Usar las rutas de jugadores
 app.use('/players', playerRoutes);
+
 
 // Rutas de ejemplo
 app.get('/', (req, res) => {
